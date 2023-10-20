@@ -1,0 +1,19 @@
+{
+  "name": "03-api-rest-node-sft",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "bun --watch main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^4.24.3"
+  },
+  "devDependencies": {
+    "bun-types": "^1.0.6"
+  }
+}

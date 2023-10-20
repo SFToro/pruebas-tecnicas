@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "types": [
+            "bun-types"
+        ],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "es2022",
+        "verbatimModuleSyntax": true,
+        "allowJs": true,
+        "moduleDetection": "force",
+        "moduleResolution": "NodeNext",
+        "module": "NodeNext"
+    }
+}

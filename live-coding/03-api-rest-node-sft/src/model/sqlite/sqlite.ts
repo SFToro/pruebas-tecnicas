@@ -1,6 +1,13 @@
 import { Database } from "bun:sqlite";
-import type { AuthorInput, BookInput } from "../model.js";
-class Store {
+import type {
+  Author,
+  AuthorInput,
+  Book,
+  BookInput,
+  BooksWithAuthors,
+  StoreIface,
+} from "../model.js";
+class Store implements StoreIface {
   #db: Database;
   #getAllBooksQuery;
   #createBookQuery;
@@ -18,7 +25,7 @@ class Store {
       `SELECT book.id as book_id, GROUP_CONCAT(author.name) as authors FROM book JOIN author_book ON book.id = author_book.book_id JOIN author ON author_book.author_id = author.id GROUP BY book.id;`
     );
     this.#createBookQuery = this.#db.query(
-      `INSERT INTO book (id, title, pages,chapters) VALUES ($id, $title, $pages, $chapters) RETURNING id;`
+      `INSERT INTO book (id, title, pages,chapters) VALUES ($id, $title, $pages, $chapters) RETURNING id, title, pages, chapters;`
     );
 
     this.#findBookByTitleQuery = this.#db.query(
@@ -26,16 +33,14 @@ class Store {
     );
     this.#getAllAuthorsQuery = this.#db.prepare(`SELECT * FROM author;`);
     this.#createAuthorQuery = this.#db.query(
-      `INSERT INTO author (id, name) VALUES ($id, $name) RETURNING id;`
+      `INSERT INTO author (id, name) VALUES ($id, $name) RETURNING id, name;`
     );
     this.#createBookAuthorQuery = this.#db.query(
       `INSERT INTO author_book (author_id, book_id) VALUES ($author_id, $book_id);`
     );
   }
   async getAllBooks() {
-    const booksWithAuthors = this.#getAllBooksQuery.all() as [
-      { id: string; author: string }
-    ];
+    const booksWithAuthors = this.#getAllBooksQuery.all() as BooksWithAuthors;
 
     return booksWithAuthors;
   }
@@ -44,20 +49,23 @@ class Store {
   }
   async createBook({ title, pages, chapters, authors }: BookInput) {
     const book_uuid = crypto.randomUUID();
-    const { id: book_id } = this.#createBookQuery.get({
-      $id: book_uuid,
-      $title: title,
-      $pages: pages,
-      $chapters: chapters,
-    });
-    authors.forEach((author) => {
-      this.#createBookAuthorQuery.run({
-        $book_id: book_id,
-        $author_id: author,
+    const transaction = this.#db.transaction(() => {
+      const book = this.#createBookQuery.get({
+        $id: book_uuid,
+        $title: title,
+        $pages: pages,
+        $chapters: chapters,
+      }) as Book;
+      authors.forEach((author) => {
+        this.#createBookAuthorQuery.run({
+          $book_id: book_uuid,
+          $author_id: author,
+        });
       });
+      return book;
     });
-
-    return book_id;
+    const result = transaction();
+    return result;
   }
   async getAllAuthors() {
     return this.#getAllAuthorsQuery.all();
@@ -65,13 +73,14 @@ class Store {
 
   async createAuthor({ name }: AuthorInput) {
     const uuid = crypto.randomUUID();
-    const { id } = this.#createAuthorQuery.get({
+    const author = this.#createAuthorQuery.get({
       $id: uuid,
       $name: name,
-    });
-    return id;
+    }) as Author;
+    return author;
   }
 }
-const store = new Store("model/sqlite/db.sqlite");
+const store = new Store("src/model/sqlite/db.sqlite");
+
 export type LibraryStore = typeof store;
 export default store;

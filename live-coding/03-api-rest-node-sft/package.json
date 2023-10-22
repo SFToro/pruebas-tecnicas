@@ -5,15 +5,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "bun --watch main.ts"
+    "dev": "bun --watch ./src/main.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fastify": "^4.24.3"
+    "fastify": "^4.24.3",
+    "fastify-type-provider-zod": "^1.1.9"
   },
   "devDependencies": {
     "bun-types": "^1.0.6"
+  },
+  "imports": {
+    "#src/*": "./src/*"
   }
 }

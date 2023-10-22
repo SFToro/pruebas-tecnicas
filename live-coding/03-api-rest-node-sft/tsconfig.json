@@ -1,15 +1,21 @@
 {
     "compilerOptions": {
+        "baseUrl": "./",
+        "paths": {
+            "#src/*": [
+                "./src/*"
+            ]
+        },
         "types": [
             "bun-types"
         ],
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "target": "es2022",
+        "target": "ESNext",
         "verbatimModuleSyntax": true,
         "allowJs": true,
         "moduleDetection": "force",
         "moduleResolution": "NodeNext",
-        "module": "NodeNext"
-    }
+        "module": "NodeNext",
+    },
 }
